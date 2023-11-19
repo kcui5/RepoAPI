@@ -62,3 +62,8 @@ def clone_repo(repo_url, target_dir=None):
         return f"Successfully cloned {repo_url}"
     except subprocess.CalledProcessError as e:
         return f"An error occurred while cloning {repo_url}: {e}"
+
+def get_repo_name(repo_url):
+    parsed_url = urlparse(repo_url)
+    path_parts = parsed_url.path.strip("/").split("/")
+    return path_parts[1]
