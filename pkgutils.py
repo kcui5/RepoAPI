@@ -13,7 +13,7 @@ def get_python_modules(directory):
 
 def get_external_packages(directory):
     """Reads the requirements.txt file and returns a list of packages."""
-    packages = []
+    packages = set()
     requirements_path = os.path.join(directory, "requirements.txt")
 
     with open(requirements_path, 'r') as file:
@@ -23,7 +23,7 @@ def get_external_packages(directory):
             if line and not line.startswith('#'):
                 # Handle lines with package version specifiers
                 package = line.split('==')[0].strip()
-                packages.append(package)
+                packages.add(package)
     return packages
 
 def fix_imports(file_path, local_modules, external_packages):
@@ -40,12 +40,15 @@ def fix_imports(file_path, local_modules, external_packages):
 
             # Update the import statement
             if is_local:
-                # Modify line to use local package import
-                if line.startswith('import '):
-                    new_line = line.replace('import ', 'from . import ', 1)
-                elif line.startswith('from '):
-                    new_line = new_line.replace('from ', 'from .', 1)
-                new_lines.append(new_line)
+                if is_external:
+                    print(f"Unrecognized package from line {line}!")
+                else:
+                    # Modify line to use local package import
+                    if line.startswith('import '):
+                        new_line = line.replace('import ', 'from . import ', 1)
+                    elif line.startswith('from '):
+                        new_line = line.replace('from ', 'from .', 1)
+                    new_lines.append(new_line)
             elif is_external:
                 # Leave external imports as they are
                 new_lines.append(line)

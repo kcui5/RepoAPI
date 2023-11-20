@@ -1,6 +1,5 @@
 import subprocess
 import re
-from urllib.parse import urlparse
 
 def is_valid_github_url(url):
     """
@@ -13,32 +12,19 @@ def is_valid_github_url(url):
     bool: True if valid, False otherwise.
     """
     # Regular expression for a basic GitHub repo URL pattern
-    regex = r'^https://github\.com/[a-zA-Z0-9_.-]+/[a-zA-Z0-9_.-]+/?$'
+    regex = r'^git@github\.com:[a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.-]+\.git$'
 
     if len(url) > 200:
         return False
     
     if not re.match(regex, url):
         return False
-
-    # Parse the URL
-    parsed_url = urlparse(url)
-
-    # Check the scheme
-    if parsed_url.scheme != 'https':
+    
+    parts = url.split(':')
+    if len(parts) != 2 or parts[0] != "git@github.com":
         return False
-
-    # Check the network location
-    if parsed_url.netloc != 'github.com':
-        return False
-
-    # Check the path (expecting two parts: /username/repository)
-    path_parts = parsed_url.path.strip("/").split("/")
-    if len(path_parts) != 2 or not all(path_parts):
-        return False
-
-    # Ensure no query string or fragment
-    if parsed_url.query or parsed_url.fragment:
+    username, repository = parts[1].split('/')
+    if not username or not repository:
         return False
 
     return True
@@ -64,6 +50,12 @@ def clone_repo(repo_url, target_dir=None):
         return f"An error occurred while cloning {repo_url}: {e}"
 
 def get_repo_name(repo_url):
-    parsed_url = urlparse(repo_url)
-    path_parts = parsed_url.path.strip("/").split("/")
-    return path_parts[1]
+    parts = repo_url.split('/')
+    if len(parts) != 2:
+        print("Unrecognized github repository ssh url!")
+        return
+    repo_name = parts[1]
+    if not repo_name.endswith('.git'):
+        print("Unrecognized github repository ssh url!")
+        return
+    return repo_name[:-4]
