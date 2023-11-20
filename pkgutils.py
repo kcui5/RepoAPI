@@ -61,22 +61,50 @@ def fix_imports(file_path, local_modules, external_packages):
     with open(file_path, 'w') as file:
         file.writelines(new_lines)
 
-def recursively_fix_imports(subfolder):
+def recursively_fix_imports(repo_path):
     """
     Fixes import statements for all Python files in the specified subfolder.
 
     Args:
     subfolder (str): The name of the subfolder.
     """
-    # Create the path to the subfolder
-    subfolder_path = os.path.join(os.getcwd(), subfolder)
-    local_modules = get_python_modules(subfolder_path)
-    external_packages = get_external_packages(subfolder_path)
+    local_modules = get_python_modules(repo_path)
+    external_packages = get_external_packages(repo_path)
 
     # Process each file in the local package
-    for root, dirs, files in os.walk(subfolder_path):
+    for root, dirs, files in os.walk(repo_path):
         for name in files:
             if name.endswith('.py'):
                 fix_imports(os.path.join(root, name), local_modules, external_packages)
         
+def create_init_file(repo_path):
+    init_file_path = os.path.join(repo_path, "__init__.py")
+    with open(init_file_path, 'w') as file:
+        pass
 
+def create_setup_file(repo_path, repo_name):
+    setup_file_path = os.path.join(repo_path, "setup.py")
+    dependencies = get_external_packages(repo_path)
+    if dependencies:
+        dependencies = ['"' + s + '",' for s in dependencies]
+        dependencies = [dependencies[0]] + ["    " * 2 + line for line in dependencies[1:]]
+        dependencies_string = "\n".join(dependencies)
+    else:
+        dependencies_string = ""
+
+    with open(setup_file_path, 'w') as file:
+        content = f"""from setuptools import setup, find_packages
+
+setup(
+    name='{repo_name}',
+    version='0.1.0',
+    package_dir={{"": "src"}},
+    packages=find_packages(where="src"),
+    description='A module to upload to modal',
+    author='unknown',
+    install_requires=[
+        {dependencies_string}
+    ],
+)
+"""
+        file.write(content)

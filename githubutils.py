@@ -1,5 +1,6 @@
 import subprocess
 import re
+import os
 
 def is_valid_github_url(url):
     """
@@ -29,22 +30,20 @@ def is_valid_github_url(url):
 
     return True
 
-def clone_repo(repo_url, target_dir=None):
+def clone_repo(repo_url):
     """
-    Clones a GitHub repository.
+    Clones a GitHub repository into /package/src/.
 
     Args:
     repo_url (str): The URL of the GitHub repository.
-    target_dir (str, optional): Directory where to clone the repo. If None, installs in the cwd.
 
     Returns:
     str: Output message of the clone operation.
     """
     try:
-        if target_dir:
-            subprocess.check_call(['git', 'clone', repo_url, target_dir])
-        else:
-            subprocess.check_call(['git', 'clone', repo_url])
+        target_dir=os.path.join(os.getcwd(), "package", "src", get_repo_name(repo_url))
+        os.makedirs(target_dir)
+        subprocess.check_call(['git', 'clone', repo_url, target_dir])
         return f"Successfully cloned {repo_url}"
     except subprocess.CalledProcessError as e:
         return f"An error occurred while cloning {repo_url}: {e}"
