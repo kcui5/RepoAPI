@@ -1,4 +1,5 @@
 import os
+import subprocess
 
 def get_python_modules(directory):
     """ Returns a set of all Python module names in the directory, including subdirectories. """
@@ -120,3 +121,22 @@ setup(
 )
 """
         file.write(content)
+
+def conda_pip_install(conda_env_name):
+    try:
+        subprocess.run(f"conda create --name {conda_env_name}", shell=True, check=True)
+        print(f"Conda environment {conda_env_name} created successfully")
+    except subprocess.CalledProcessError as e:
+        print(f"Error creating environment: {e}")
+
+    pkg_file_path = os.path.join(os.getcwd(), "package")
+    try:
+        subprocess.run(f"conda run --name {conda_env_name} pip install modal", shell=True, check=True)
+        print(f"Successfully installed modal in {conda_env_name}")
+        install_command = f"conda run --name {conda_env_name} pip install {pkg_file_path}"
+        subprocess.run(install_command, shell=True, check=True)
+        print("Local package installed successfully.")
+
+    except subprocess.CalledProcessError as e:
+        print("Error installing package:", e)
+        exit()
