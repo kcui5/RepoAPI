@@ -77,13 +77,25 @@ def recursively_fix_imports(repo_path):
             if name.endswith('.py'):
                 fix_imports(os.path.join(root, name), local_modules, external_packages)
         
-def create_init_file(repo_path):
+def create_init_file(repo_path, api_functions):
     init_file_path = os.path.join(repo_path, "__init__.py")
+    import_files = set()
+    for func in api_functions:
+        chain = func.split('.')[:-1]
+        if len(chain) == 1:
+            file = f"from . import {chain[0]}"
+        elif len(chain) == 2:
+            file = f"from .{chain[0]} import {chain[1]}"
+        elif len(chain) > 2:
+            file = "from " + ".".join(chain[:-1]) + f" import {chain[-1]}"
+        import_files.add(file)
+    file_import_string = "\n".join(import_files)
+
     with open(init_file_path, 'w') as file:
-        pass
+        file.write(file_import_string)
 
 def create_setup_file(repo_path, repo_name):
-    setup_file_path = os.path.join(repo_path, "setup.py")
+    setup_file_path = os.path.join(os.getcwd(), "package", "setup.py")
     dependencies = get_external_packages(repo_path)
     if dependencies:
         dependencies = ['"' + s + '",' for s in dependencies]
