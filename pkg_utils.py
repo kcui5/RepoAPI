@@ -113,14 +113,19 @@ setup(
     version='0.1.0',
     package_dir={{"": "src"}},
     packages=find_packages(where="src"),
+    include_package_data=True,
     description='A module to upload to modal',
-    author='unknown',
     install_requires=[
         {dependencies_string}
     ],
 )
 """
         file.write(content)
+
+def create_manifest_file():
+    manifest_file_path = os.path.join(os.getcwd(), "package", "MANIFEST.in")
+    with open(manifest_file_path, 'w') as file:
+        file.write("graft src")
 
 def conda_pip_install(conda_env_name):
     try:
