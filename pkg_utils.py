@@ -114,9 +114,8 @@ def fix_argparse(file, func_name, func_args):
                 print("Unrecognized function declaration:")
                 print(line)
                 exit()
-            if previous_func_args == '':
+            if previous_func_args == ['']:
                 args_str = '(' + ", ".join(func_args) + ')'
-                previous_func_args = ['']
             else:
                 args_str = '(' + previous_func_args[0] + ", " + ", ".join(func_args) + ')'
             new_line = line.replace(f'({previous_func_args[0]})', args_str)

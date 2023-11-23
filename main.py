@@ -46,7 +46,7 @@ def from_local_package():
     else:
         print(f"Cloning repo from {test_repo}...")
     print(github_utils.clone_repo(test_repo))
-    """
+    
     repo_name = github_utils.get_repo_name(test_repo)
     print(f"Repository Name: {repo_name}")
 
@@ -74,9 +74,9 @@ def from_local_package():
     pkg_utils.conda_pip_install(conda_env_name)
     print(f"Installed local package into conda env {conda_env_name}")
     
-    print("Serving APIs on modal...")
-    create_apis.serve_apis(conda_env_name, apis)
-"""
+    #print("Serving APIs on modal...")
+    #create_apis.serve_apis(conda_env_name, apis)
+
 from_local_package()
 
 """docker_link = "liuyuanpal/syncdreamer-env:latest"
