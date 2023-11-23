@@ -16,6 +16,7 @@ def get_python_modules(directory):
 def get_external_packages(directory):
     """Reads the requirements.txt file and returns a list of packages."""
     packages = set()
+    packages.add('torch')
     requirements_path = os.path.join(directory, "requirements.txt")
 
     with open(requirements_path, 'r') as file:
@@ -44,20 +45,25 @@ def fix_imports(file_path, local_modules, external_packages):
             # Update the import statement
             if is_local:
                 if is_external:
-                    print(f"Unrecognized package from line {line}!")
+                    print(f"Unrecognized local and external package from line: {line}!")
+                    new_line = line
                 else:
                     # Modify line to use local package import
-                    if line.startswith('import '):
+                    if line.startswith('import ') and not line.startswith('import .'):
                         new_line = line.replace('import ', 'from . import ', 1)
-                    elif line.startswith('from '):
+                    elif line.startswith('from ') and not line.startswith('from .'):
                         new_line = line.replace('from ', 'from .', 1)
-                    print(f"Replacing {line} with {new_line}!")
-                    new_lines.append(new_line)
+                    else:
+                        new_line = line
+                    if line != new_line:
+                        print(f"Replacing {line} with {new_line}!")
+                new_lines.append(new_line)
             elif is_external:
                 # Leave external imports as they are
                 new_lines.append(line)
             else:
-                print(f"Unrecognized package from line {line}!")
+                #print(f"Unrecognized package from line: {line}!")
+                new_lines.append(line)
         else:
             new_lines.append(line)
 
@@ -74,11 +80,15 @@ def recursively_fix_imports(repo_path):
     """
     local_modules = get_python_modules(repo_path)
     external_packages = get_external_packages(repo_path)
+    print(f"Local modules: {local_modules}")
 
     # Process each file in the local package
     for root, dirs, files in os.walk(repo_path):
         for name in files:
             if name.endswith('.py'):
+                if name == "setup.py":
+                    print("Skipping setup.py file!")
+                    continue
                 fix_imports(os.path.join(root, name), local_modules, external_packages)
         
 def fix_argparse(file, func_name, func_args):
@@ -100,12 +110,11 @@ def fix_argparse(file, func_name, func_args):
         new_line = ""
         if f"def {func_name}" in line:
             previous_func_args = re.findall(r'\((.*?)\)', line)
-            print(previous_func_args)
             if len(previous_func_args) > 1:
                 print("Unrecognized function declaration:")
                 print(line)
                 exit()
-            if not previous_func_args:
+            if previous_func_args == '':
                 args_str = '(' + ", ".join(func_args) + ')'
                 previous_func_args = ['']
             else:
