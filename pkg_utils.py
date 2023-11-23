@@ -78,6 +78,39 @@ def recursively_fix_imports(repo_path):
             if name.endswith('.py'):
                 fix_imports(os.path.join(root, name), local_modules, external_packages)
         
+def fix_argparse(file, func_name, func_args):
+    """Converts argparse inputted arguments into function signature arguments
+    file is the file being fixed
+    args is a list of args (the value in the key-value pair of args dict)"""
+    print(f"Fixing argparse for {file}")
+    with open(file, 'r') as f:
+        lines = f.readlines()
+    
+    new_lines = []
+    for line in lines:
+        if "def" in line and func_name in line:
+            args_str = ", ".join(func_args)
+            new_line = line.replace(')', args_str + ')')
+            new_lines.append(new_line)
+        elif ".add_argument(" in line:
+            new_line = ""
+            new_lines.append(new_line)
+        else:
+            new_lines.append(line)
+
+    with open(file, 'w') as f:
+        f.writelines(new_lines)
+
+def fix_all_argparse(repo_path, apis, apis_args):
+    for i in range(len(apis)):
+        file = os.path.join(repo_path, '.'.join(apis[i].split('.')[:-1])+'.py')
+        print(f"looking in {file}")
+        with open(file, 'r') as f:
+            for line in f:
+                if "argparse" in line:
+                    fix_argparse(file, apis[i].split('.')[-1], apis_args[apis[i]])
+                    break
+
 def create_init_file(repo_path, api_functions):
     init_file_path = os.path.join(repo_path, "__init__.py")
     import_files = set()

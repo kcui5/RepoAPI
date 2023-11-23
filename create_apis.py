@@ -2,7 +2,7 @@ import os
 import subprocess
 import json
 
-def get_api_func_signature(func_name, func_call, img=None, repo=None, gpu=None):
+def get_api_func_signature(func_name, func_call, func_args, img=None, repo=None, gpu=None):
     res_string = """res_json = {
         "status": "200",
         "data": {
@@ -20,14 +20,15 @@ def get_api_func_signature(func_name, func_call, img=None, repo=None, gpu=None):
     decorator_args_str = ", ".join(decorator_args)
     stub_function_decorator = f'@stub.function({decorator_args_str})'
 
+    func_args_str = ", ".join([f"{arg.split(':')[0]}" for arg in func_args])
     if repo:
-        func_call_str = f'res = {repo}.{func_call}()'
+        func_call_str = f'res = {repo}.{func_call}({func_args_str})'
     else:
-        func_call_str = f'res = {func_call}()'
+        func_call_str = f'res = {func_call}({func_args_str})'
 
     content = f"""{stub_function_decorator}
 @modal.web_endpoint()
-def {func_name}():
+def {func_name}({", ".join(func_args)}):
     {func_call_str}
     {res_string}
     print(res_json)
@@ -36,7 +37,15 @@ def {func_name}():
 """
     return content
 
-def create_api_file_from_local_pkg(api_function_calls, repo_name, gpu_type):
+def fill_empty_api_args(apis, args):
+    for api in apis:
+        if api in args:
+            continue
+        else:
+            args[api] = []
+    return args
+
+def create_api_file_from_local_pkg(api_function_calls, apis_args, repo_name, gpu_type):
     api_file_path = os.path.join(os.getcwd(), "modal_apis.py")
 
     api_function_names = ["_".join(func.split('.')) for func in api_function_calls]
@@ -49,7 +58,8 @@ stub = modal.Stub()
 
 """
     for i in range(len(api_function_calls)):
-        content += get_api_func_signature(api_function_names[i], api_function_calls[i], repo=repo_name, gpu=gpu_type)
+        api_args = apis_args[api_function_calls[i]]
+        content += get_api_func_signature(api_function_names[i], api_function_calls[i], api_args, repo=repo_name, gpu=gpu_type)
     
     with open(api_file_path, 'w') as file:
         file.write(content)
@@ -67,7 +77,8 @@ docker_img = modal.Image.from_registry("{docker_link}")
 
 """
     for i in range(len(api_function_calls)):
-        content += get_api_func_signature(api_function_names[i], api_function_calls[i], img="docker_img", gpu=gpu_type)
+        api_args = apis_args[api_function_calls[i]]
+        content += get_api_func_signature(api_function_names[i], api_function_calls[i], api_args, img="docker_img", gpu=gpu_type)
 
     with open(api_file_path, 'w') as file:
         file.write(content)
