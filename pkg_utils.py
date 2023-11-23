@@ -1,5 +1,6 @@
 import os
 import subprocess
+import re
 
 def get_python_modules(directory):
     """ Returns a set of all Python module names in the directory, including subdirectories. """
@@ -81,23 +82,42 @@ def recursively_fix_imports(repo_path):
 def fix_argparse(file, func_name, func_args):
     """Converts argparse inputted arguments into function signature arguments
     file is the file being fixed
-    args is a list of args (the value in the key-value pair of args dict)"""
+    args is a list of args (the value in the key-value pair of args dict)
+    
+    Does not support arguments set with dest= in .add_argument()!!"""
     print(f"Fixing argparse for {file}")
     with open(file, 'r') as f:
         lines = f.readlines()
     
     new_lines = []
+    parser_parse_args_obj_pattern = r'\b(\w+)\s*=\s*(\w+)\.parse_args\(\)'
+    parser_parse_args_obj = ""
     for line in lines:
-        if "def" in line and func_name in line:
-            args_str = ", ".join(func_args)
-            new_line = line.replace(')', args_str + ')')
-            new_lines.append(new_line)
+        new_line = ""
+        if f"def {func_name}" in line:
+            previous_func_args = re.findall(r'"(.*?)"', line)
+            if len(previous_func_args) > 1:
+                print("Unrecognized function declaration:")
+                print(line)
+                exit()
+            if not previous_func_args:
+                args_str = '(' + ", ".join(func_args) + ')'
+                previous_func_args = ['']
+            else:
+                args_str = '(' + previous_func_args[0] + ", " + ", ".join(func_args) + ')'
+            new_line = line.replace(f'({previous_func_args[0]})', args_str)
         elif ".add_argument(" in line:
-            new_line = ""
-            new_lines.append(new_line)
+            new_line = "#" + line
+            #Does not check for dest= being set !!
+        elif re.search(parser_parse_args_obj_pattern, line):
+            parser_parse_args_obj = line[:line.find(" =")].lstrip()
+            print(f"Found parser_parse_args_obj {parser_parse_args_obj}")
+            new_line = "#" + line
+        elif parser_parse_args_obj and parser_parse_args_obj in line:
+            new_line = line.replace(parser_parse_args_obj + ".", "")
         else:
-            new_lines.append(line)
-
+            new_line = line
+        new_lines.append(new_line)
     with open(file, 'w') as f:
         f.writelines(new_lines)
 

@@ -27,7 +27,7 @@ UNKNOWN BEHAVIOR FOR NESTED FUNCTIONS OR FUNCTIONS IN CLASSES ETC.....
 test_repo = "git@github.com:kcui5/pd_modal.git"
 apis = ["pd_home.getSum", "pd_alt.getSumTwo"]
 args = {
-    apis[0]: ["x: int = 10", "y: int"]
+    apis[0]: ["x: int", "y: int = 10"]
 }
 args = create_apis.fill_empty_api_args(apis, args)
 
