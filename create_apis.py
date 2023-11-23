@@ -34,6 +34,7 @@ def {func_name}({", ".join(func_args)}):
     print(res_json)
     res_json = json.dumps(res_json)
     return res_json
+    
 """
     return content
 

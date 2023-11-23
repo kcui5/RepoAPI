@@ -29,6 +29,7 @@ def get_external_packages(directory):
     return packages
 
 def fix_imports(file_path, local_modules, external_packages):
+    print(f"Fixing imports in... {file_path}")
     with open(file_path, 'r') as file:
         lines = file.readlines()
 
@@ -50,6 +51,7 @@ def fix_imports(file_path, local_modules, external_packages):
                         new_line = line.replace('import ', 'from . import ', 1)
                     elif line.startswith('from '):
                         new_line = line.replace('from ', 'from .', 1)
+                    print(f"Replacing {line} with {new_line}!")
                     new_lines.append(new_line)
             elif is_external:
                 # Leave external imports as they are
@@ -84,18 +86,21 @@ def fix_argparse(file, func_name, func_args):
     file is the file being fixed
     args is a list of args (the value in the key-value pair of args dict)
     
-    Does not support arguments set with dest= in .add_argument()!!"""
-    print(f"Fixing argparse for {file}")
+    Does not support arguments set with dest= in .add_argument()!!
+    Does not support fixing functions who already take in arguments with default values in addition to argparse arguments!!"""
+    print(f"Fixing argparse in {file}...")
     with open(file, 'r') as f:
         lines = f.readlines()
     
     new_lines = []
+    #Object set to the argparse.ArgumentParser().parse_args() object (which holds all the args as attributes)
     parser_parse_args_obj_pattern = r'\b(\w+)\s*=\s*(\w+)\.parse_args\(\)'
     parser_parse_args_obj = ""
     for line in lines:
         new_line = ""
         if f"def {func_name}" in line:
-            previous_func_args = re.findall(r'"(.*?)"', line)
+            previous_func_args = re.findall(r'\((.*?)\)', line)
+            print(previous_func_args)
             if len(previous_func_args) > 1:
                 print("Unrecognized function declaration:")
                 print(line)
@@ -117,6 +122,8 @@ def fix_argparse(file, func_name, func_args):
             new_line = line.replace(parser_parse_args_obj + ".", "")
         else:
             new_line = line
+        if line != new_line:
+            print(f"Replacing {line} with {new_line}!")
         new_lines.append(new_line)
     with open(file, 'w') as f:
         f.writelines(new_lines)
@@ -124,7 +131,6 @@ def fix_argparse(file, func_name, func_args):
 def fix_all_argparse(repo_path, apis, apis_args):
     for i in range(len(apis)):
         file = os.path.join(repo_path, '.'.join(apis[i].split('.')[:-1])+'.py')
-        print(f"looking in {file}")
         with open(file, 'r') as f:
             for line in f:
                 if "argparse" in line:
