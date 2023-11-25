@@ -14,9 +14,18 @@ def get_api_func_signature(func_name, func_call, func_args, img=None, repo=None,
     decorator_args_str = ", ".join(decorator_args)
     stub_function_decorator = f'@stub.function({decorator_args_str})'
 
+    #Inputs that do not have a default value:
+    inputs_parsed = "\n".join([" " * 4 + f"{arg}" + f" = inputs['{arg.split(':')[0]}']" for arg in func_args if "=" not in arg])
+    #Inputs that do have a default value:
+    default_inputs_parsed = "\n".join([" " * 4 + f"{arg.split('=')[0]}" + f"= inputs['{arg.split(':')[0]}'] if '{arg.split(':')[0]}' in inputs else{arg.split('=')[1]}" for arg in func_args if "=" in arg])
+    if default_inputs_parsed:
+        inputs_parsed += "\n" + default_inputs_parsed
+
     func_args_str = ", ".join([f"{arg.split(':')[0]}" for arg in func_args])
     if repo:
         func_call_str = f"""import {repo}
+
+{inputs_parsed}
 
     res = {repo}.{func_call}({func_args_str})"""
     else:
@@ -32,7 +41,7 @@ def get_api_func_signature(func_name, func_call, func_args, img=None, repo=None,
 
     content = f"""{stub_function_decorator}
 @modal.web_endpoint()
-def {func_name}({", ".join(func_args)}):
+def {func_name}(inputs: Dict):
     {func_call_str}
     {res_string}
     print(res_json)
@@ -79,6 +88,7 @@ def create_api_file_from_docker(api_function_calls, apis_args, docker_link, repo
     api_function_names = ["_".join(func.split('.')) for func in api_function_calls]
 
     content = f"""import json
+from typing import Dict
 import modal
 
 stub = modal.Stub()

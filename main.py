@@ -11,6 +11,7 @@ APIs CREATED DO NOT INPUT ARGUMENTS THAT PREVIOUSLY WERE INPUTTED IN ORIGINAL FU
 
 DOES NOT SUPPORT REQUIREMENTS IN REQUIREMENTS.TXT THAT DON'T MATCH THEIR PACKAGE NAME
 
+DOES NOT WORK IF ANY LOCAL PACKAGE FOLDER OR FILE OR FUNCTION HAS 'TORCH'
 
 
 MOUNT VOLUMES ???
@@ -126,10 +127,10 @@ def from_docker_image():
     create_apis.create_api_file_from_docker(docker_apis, docker_args, docker_link, repo_name, repo_path, docker_gpu_type)
     print("Created API file")
     
-    pkg_utils.conda_pip_install(conda_env_name)
+    #pkg_utils.conda_pip_install(conda_env_name)
     print(f"Installed local package into conda env {conda_env_name}")
     
     print("Serving APIs on modal...")
-    create_apis.serve_apis(conda_env_name, docker_apis)
+    #create_apis.serve_apis(conda_env_name, docker_apis)
 
 from_docker_image()
