@@ -29,7 +29,7 @@ def get_external_packages(directory):
                 packages.add(package)
     return packages
 
-def fix_imports(file_path, local_modules, external_packages):
+def fix_imports(file_path, pkg_name, local_modules, external_packages):
     print(f"Fixing imports in... {file_path}")
     with open(file_path, 'r') as file:
         lines = file.readlines()
@@ -52,7 +52,7 @@ def fix_imports(file_path, local_modules, external_packages):
                     if line.startswith('import ') and not line.startswith('import .'):
                         new_line = line.replace('import ', 'from . import ', 1)
                     elif line.startswith('from ') and not line.startswith('from .'):
-                        new_line = line.replace('from ', 'from .', 1)
+                        new_line = line.replace('from ', f'from {pkg_name}.', 1)
                     else:
                         new_line = line
                     if line != new_line:
@@ -71,7 +71,7 @@ def fix_imports(file_path, local_modules, external_packages):
     with open(file_path, 'w') as file:
         file.writelines(new_lines)
 
-def recursively_fix_imports(repo_path):
+def recursively_fix_imports(repo_path, repo_name):
     """
     Fixes import statements for all Python files in the specified subfolder.
 
@@ -89,7 +89,7 @@ def recursively_fix_imports(repo_path):
                 if name == "setup.py":
                     print("Skipping setup.py file!")
                     continue
-                fix_imports(os.path.join(root, name), local_modules, external_packages)
+                fix_imports(os.path.join(root, name), repo_name, local_modules, external_packages)
         
 def fix_argparse(file, func_name, func_args):
     """Converts argparse inputted arguments into function signature arguments

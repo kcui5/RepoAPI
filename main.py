@@ -11,13 +11,16 @@ APIs CREATED DO NOT INPUT ARGUMENTS THAT PREVIOUSLY WERE INPUTTED IN ORIGINAL FU
 
 DOES NOT SUPPORT REQUIREMENTS IN REQUIREMENTS.TXT THAT DON'T MATCH THEIR PACKAGE NAME
 
+
+
+
 MOVE LOCAL PACKAGE DEPENDENCIES TO CONDA INSTALL ON MODAL IMAGE??
 TRY MOUNTING LOCAL PACKAGE TO DOCKER IMAGE WITHOUT CKPT FILES???
 
 """
 
 test_repo = "git@github.com:liuyuan-pal/SyncDreamer.git"
-apis = ["generate.main"]
+apis = ["generate.main", "train_syncdreamer.get_node_name"]
 args = {
     apis[0]: [
         "output: str", 
@@ -49,13 +52,13 @@ def from_local_package():
     else:
         print(f"Cloning repo from {test_repo}...")
     print(github_utils.clone_repo(test_repo))
-    
+    """
     repo_name = github_utils.get_repo_name(test_repo)
     print(f"Repository Name: {repo_name}")
 
     repo_path = os.path.join(os.getcwd(), "package", "src", repo_name)
-    
-    pkg_utils.recursively_fix_imports(repo_path)
+    """
+    pkg_utils.recursively_fix_imports(repo_path, repo_name)
     print("Fixed imports")
     
     pkg_utils.fix_all_argparse(repo_path, apis, args)
@@ -72,10 +75,10 @@ def from_local_package():
     
     create_apis.create_api_file_from_local_pkg(apis, args, repo_name, gpu_type)
     print("Created API file")
-    
-"""
+    """
+
     pkg_utils.conda_pip_install(conda_env_name)
-    print(f"Installed local package into conda env {conda_env_name}")
+    #print(f"Installed local package into conda env {conda_env_name}")
     
     #print("Serving APIs on modal...")
     #create_apis.serve_apis(conda_env_name, apis)
