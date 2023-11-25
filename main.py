@@ -17,7 +17,7 @@ DOES NOT WORK IF ANY LOCAL PACKAGE FOLDER OR FILE OR FUNCTION HAS 'TORCH'
 MOUNT VOLUMES ???
 
 """
-"""
+
 local_repo = "git@github.com:kcui5/pd_modal.git"
 local_apis = ["pd_home.getSum"]
 local_args = {
@@ -67,9 +67,9 @@ def from_local_package():
     create_apis.serve_apis(conda_env_name, local_apis)
 
 from_local_package()
+
+
 """
-
-
 docker_repo = "git@github.com:liuyuan-pal/SyncDreamer.git"
 docker_link = "liuyuanpal/syncdreamer-env:latest"
 docker_apis = ["generate.main", "train_syncdreamer.get_node_name"]
@@ -127,10 +127,11 @@ def from_docker_image():
     create_apis.create_api_file_from_docker(docker_apis, docker_args, docker_link, repo_name, repo_path, docker_gpu_type)
     print("Created API file")
     
-    #pkg_utils.conda_pip_install(conda_env_name)
+    pkg_utils.conda_pip_install(conda_env_name)
     print(f"Installed local package into conda env {conda_env_name}")
     
     print("Serving APIs on modal...")
-    #create_apis.serve_apis(conda_env_name, docker_apis)
+    create_apis.serve_apis(conda_env_name, docker_apis)
 
 from_docker_image()
+"""

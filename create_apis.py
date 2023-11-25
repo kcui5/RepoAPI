@@ -65,6 +65,7 @@ def create_api_file_from_local_pkg(api_function_calls, apis_args, repo_name, rep
     api_function_names = ["_".join(func.split('.')) for func in api_function_calls]
 
     content = f"""import json
+from typing import Dict
 import modal
 
 stub = modal.Stub()
