@@ -83,7 +83,6 @@ def recursively_fix_imports(repo_path, repo_name):
     """
     local_modules = get_python_modules(repo_path)
     external_packages = get_external_packages(repo_path)
-    print(f"Local modules: {local_modules}")
 
     # Process each file in the local package
     for root, dirs, files in os.walk(repo_path):
@@ -194,24 +193,30 @@ setup(
         file.write(content)
 
 def create_manifest_file():
-    manifest_file_path = os.path.join(os.getcwd(), "package", "MANIFEST.in")
+    #manifest_file_path = os.path.join(os.getcwd(), "package", "MANIFEST.in")
+    manifest_file_path = os.path.join(os.getcwd(), "MANIFEST.txt")
     with open(manifest_file_path, 'w') as file:
         file.write("graft src")
 
-def conda_pip_install(conda_env_name):
+def pip_install_packages():
+    pkg_file_path = os.path.join("/root", "package")
     try:
-        subprocess.run(f"conda create --name {conda_env_name}", shell=True, check=True)
-        print(f"Conda environment {conda_env_name} created successfully")
-    except subprocess.CalledProcessError as e:
-        print(f"Error creating environment: {e}")
-
-    pkg_file_path = os.path.join(os.getcwd(), "package")
-    try:
-        subprocess.run(f"conda run --name {conda_env_name} pip install modal", shell=True, check=True)
-        print(f"Successfully installed modal in {conda_env_name}")
-        install_command = f"conda run --name {conda_env_name} pip install {pkg_file_path}"
-        subprocess.run(install_command, shell=True, check=True)
-        print("Local package installed successfully.")
+        """subprocess.run('ls -a', shell=True, check=True)
+        subprocess.run('echo $PATH', shell=True, check=True)
+        subprocess.run('echo \'export PATH="/root/.local/bin:$PATH"\' >> ~/.bashrc', shell=True, check=True)
+        subprocess.run('echo \'export PATH="/root/.local/bin:$PATH"\' >> ~/.profile', shell=True, check=True)
+        subprocess.run('echo $PATH', shell=True, check=True)
+        subprocess.run(f"pip install --user --force-reinstall modal", shell=True, check=True)"""
+        subprocess.run("pip install virtualenv", shell=True, check=True)
+        print("Installed virtualenv")
+        subprocess.run("virtualenv /pkgsvenv", shell=True)
+        activate_command = "source /pkgsvenv/bin/activate"
+        modal_install_command = "pip install modal"
+        subprocess.run(f"{activate_command} && {modal_install_command}", shell=True, executable="/bin/bash")
+        print(f"Successfully pip installed modal")
+        pkg_install_command = f"pip install {pkg_file_path}"
+        subprocess.run(f"{activate_command} && {pkg_install_command}", shell=True, check=True, executable="/bin/bash")
+        print("Local package pip installed successfully.")
 
     except subprocess.CalledProcessError as e:
         print("Error installing package:", e)

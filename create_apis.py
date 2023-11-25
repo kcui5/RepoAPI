@@ -110,12 +110,18 @@ def get_api_links(apis):
     api_links = [f"https://kcui5--repo-apis-py-{s}-dev.modal.run" for s in apis]
     return api_links
 
-def serve_apis(conda_env_name, apis):
+def serve_apis(apis):
     try:
+        #print(subprocess.run("pip show pd_modal", shell=True, check=True))
+        
+        #print(subprocess.run("pip show modal", shell=True, check=True))
+        #print(subprocess.run("ls -a /usr/local/lib/python3.11/site-packages", shell=True, check=True))
+        
         api_file_path = "repo_apis.py"
-        serve_command = f"conda run --name {conda_env_name} modal serve {api_file_path}"
+        serve_command = f"modal serve {api_file_path}"
         print(get_api_links(apis))
-        subprocess.run(serve_command, shell=True, check=True)
+        activate_command = "source /pkgsvenv/bin/activate"
+        subprocess.run(f"{activate_command} && {serve_command}", shell=True, check=True, executable="/bin/bash")
     except subprocess.CalledProcessError as e:
         print("Error serving APIs: ", e)
         exit()

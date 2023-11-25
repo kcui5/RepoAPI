@@ -2,17 +2,19 @@ import subprocess
 import re
 import os
 
-def is_valid_github_url(url):
-    """
-    Validates whether the provided URL is a valid GitHub repository URL.
+def validate_https_github_url(url):
+    regex = r'^https://github\.com/[\w.-]+/[\w.-]+(?:\.git)?$'
 
-    Args:
-    url (str): The URL to validate.
+    if len(url) > 200:
+        return False
+    
+    if not re.match(regex, url):
+        return False
 
-    Returns:
-    bool: True if valid, False otherwise.
-    """
-    # Regular expression for a basic GitHub repo URL pattern
+    return True
+
+def validate_ssh_github_url(url):
+    # Regular expression for a basic GitHub repo ssh URL pattern
     regex = r'^git@github\.com:[a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.-]+\.git$'
 
     if len(url) > 200:
@@ -29,6 +31,22 @@ def is_valid_github_url(url):
         return False
 
     return True
+
+def is_valid_github_url(url):
+    """
+    Validates whether the provided URL is a valid GitHub repository URL.
+
+    Args:
+    url (str): The URL to validate.
+
+    Returns:
+    bool: True if valid, False otherwise.
+    """
+    if url.startswith('https://'):
+        print("https")
+        return validate_https_github_url(url)
+    else:
+        return validate_ssh_github_url(url)
 
 def clone_repo(repo_url):
     """
@@ -49,12 +67,22 @@ def clone_repo(repo_url):
         return f"An error occurred while cloning {repo_url}: {e}"
 
 def get_repo_name(repo_url):
-    parts = repo_url.split('/')
-    if len(parts) != 2:
-        print("Unrecognized github repository ssh url!")
-        return
-    repo_name = parts[1]
-    if not repo_name.endswith('.git'):
-        print("Unrecognized github repository ssh url!")
-        return
-    return repo_name[:-4]
+    if repo_url.startswith('https://'):
+        parts = repo_url.split('/')
+        if len(parts) != 5:
+            print("Unrecognized github repository https url!")
+            return
+        repo_name = parts[-1]
+        if not repo_name.endswith('.git'):
+            print("Unrecognized github repository https url!")
+        return repo_name[:-4]
+    else:
+        parts = repo_url.split('/')
+        if len(parts) != 2:
+            print("Unrecognized github repository ssh url!")
+            return
+        repo_name = parts[1]
+        if not repo_name.endswith('.git'):
+            print("Unrecognized github repository ssh url!")
+            return
+        return repo_name[:-4]
