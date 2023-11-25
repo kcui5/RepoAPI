@@ -29,6 +29,10 @@ def get_external_packages(directory):
     return packages
 
 def fix_imports(file_path, pkg_name, local_modules, external_packages):
+    #TO HANDLE SPECIAL CASE OF TORCH PACKAGE NOT BEING IN REQUIREMENTS.TXT:
+    external_packages.add("torch")
+
+
     print(f"Fixing imports in... {file_path}")
     with open(file_path, 'r') as file:
         lines = file.readlines()
@@ -116,7 +120,15 @@ def fix_argparse(file, func_name, func_args):
             if previous_func_args == ['']:
                 args_str = '(' + ", ".join(func_args) + ')'
             else:
-                args_str = '(' + previous_func_args[0] + ", " + ", ".join(func_args) + ')'
+                new_func_args = []
+                previous_func_args_items = [a.strip() for a in previous_func_args[0].split(",")]
+                for a in func_args:
+                    if a not in previous_func_args_items:
+                        new_func_args.append(a)
+                if new_func_args:
+                    args_str = '(' + previous_func_args[0] + ", " + ", ".join(new_func_args) + ')'
+                else:
+                    args_str = '(' + previous_func_args[0] + ')'
             new_line = line.replace(f'({previous_func_args[0]})', args_str)
         elif ".add_argument(" in line:
             new_line = "#" + line
