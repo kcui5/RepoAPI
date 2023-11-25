@@ -18,7 +18,7 @@ MOVE LOCAL PACKAGE DEPENDENCIES TO CONDA INSTALL ON MODAL IMAGE??
 TRY MOUNTING LOCAL PACKAGE TO DOCKER IMAGE WITHOUT CKPT FILES???
 
 """
-
+"""
 test_repo = "git@github.com:liuyuan-pal/SyncDreamer.git"
 apis = ["generate.main", "train_syncdreamer.get_node_name"]
 args = {
@@ -37,27 +37,32 @@ args = {
         "sample_steps: int = 50",
       ]
 }
-args = create_apis.fill_empty_api_args(apis, args)
-
 gpu_type = "A100"
-#gpu_type = ""
+"""
+test_repo = "git@github.com:kcui5/pd_modal.git"
+apis = ["pd_home.getSum"]
+args = {
+    apis[0]: [
+        "x: int",
+        "y: int = 40"
+    ]
+}
+args = create_apis.fill_empty_api_args(apis, args)
+gpu_type = ""
 
 def from_local_package():
-
-    conda_env_name = "testcondaenv"
-    """
+    repo_name = github_utils.get_repo_name(test_repo)
+    print(f"Repository Name: {repo_name}")
+    repo_path = os.path.join(os.getcwd(), "package", "src", repo_name)
+    conda_env_name = f"{repo_name}"
+    
     if not github_utils.is_valid_github_url(test_repo):
         print("Link invalid!")
         exit()
     else:
         print(f"Cloning repo from {test_repo}...")
     print(github_utils.clone_repo(test_repo))
-    """
-    repo_name = github_utils.get_repo_name(test_repo)
-    print(f"Repository Name: {repo_name}")
-
-    repo_path = os.path.join(os.getcwd(), "package", "src", repo_name)
-    """
+    
     pkg_utils.recursively_fix_imports(repo_path, repo_name)
     print("Fixed imports")
     
@@ -73,15 +78,14 @@ def from_local_package():
     pkg_utils.create_manifest_file()
     print("Created manifest file")
     
-    create_apis.create_api_file_from_local_pkg(apis, args, repo_name, gpu_type)
+    create_apis.create_api_file_from_local_pkg(apis, args, repo_name, repo_path, gpu_type)
     print("Created API file")
-    """
 
     pkg_utils.conda_pip_install(conda_env_name)
-    #print(f"Installed local package into conda env {conda_env_name}")
+    print(f"Installed local package into conda env {conda_env_name}")
     
-    #print("Serving APIs on modal...")
-    #create_apis.serve_apis(conda_env_name, apis)
+    print("Serving APIs on modal...")
+    create_apis.serve_apis(conda_env_name, apis)
 
 from_local_package()
 

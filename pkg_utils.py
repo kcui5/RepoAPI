@@ -16,7 +16,6 @@ def get_python_modules(directory):
 def get_external_packages(directory):
     """Reads the requirements.txt file and returns a list of packages."""
     packages = set()
-    packages.add('torch')
     requirements_path = os.path.join(directory, "requirements.txt")
 
     with open(requirements_path, 'r') as file:
@@ -164,13 +163,6 @@ def create_init_file(repo_path, api_functions):
 
 def create_setup_file(repo_path, repo_name):
     setup_file_path = os.path.join(os.getcwd(), "package", "setup.py")
-    dependencies = get_external_packages(repo_path)
-    if dependencies:
-        dependencies = ['"' + s + '",' for s in dependencies]
-        dependencies = [dependencies[0]] + ["    " * 2 + line for line in dependencies[1:]]
-        dependencies_string = "\n".join(dependencies)
-    else:
-        dependencies_string = ""
 
     with open(setup_file_path, 'w') as file:
         content = f"""from setuptools import setup, find_packages
@@ -183,7 +175,7 @@ setup(
     include_package_data=True,
     description='A module to upload to modal',
     install_requires=[
-        {dependencies_string}
+    
     ],
 )
 """
