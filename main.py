@@ -61,13 +61,17 @@ def from_local_package(local_repo, local_apis, local_args, local_gpu_type):
     create_apis.create_api_file_from_local_pkg(local_apis, local_args, repo_name, repo_path, local_gpu_type)
     print("Created API file")
 
-    pkg_utils.pip_install_packages()
-    print("Installed package with pip")
+    pkg_utils.conda_install_packages(conda_env_name)
+    print("Installed package with conda")
+
+    #pkg_utils.pip_install_packages()
+    #print("Installed package with pip")
 
     print("Serving APIs...")
-    create_apis.serve_apis(local_apis)
+    #create_apis.serve_apis(local_apis)
+    create_apis.serve_apis_conda(conda_env_name, local_apis)
 
-#from_local_package()
+#from_local_package(local_repo, local_apis, local_args, local_gpu_type)
 """
 docker_repo = "git@github.com:liuyuan-pal/SyncDreamer.git"
 docker_link = "liuyuanpal/syncdreamer-env:latest"

@@ -118,10 +118,22 @@ def serve_apis(apis):
         #print(subprocess.run("ls -a /usr/local/lib/python3.11/site-packages", shell=True, check=True))
         
         api_file_path = "repo_apis.py"
-        serve_command = f"modal serve {api_file_path}"
+        #serve_command = f"modal serve {api_file_path}"
+        serve_command = "echo $PATH"
         print(get_api_links(apis))
-        activate_command = "source /pkgsvenv/bin/activate"
+        #activate_command = "source /pkgsvenv/bin/activate"
+        activate_command = 'export PATH="/pkg:$PATH"'
         subprocess.run(f"{activate_command} && {serve_command}", shell=True, check=True, executable="/bin/bash")
     except subprocess.CalledProcessError as e:
         print("Error serving APIs: ", e)
         exit()
+
+def serve_apis_conda(conda_env_name, apis):
+    try:
+        api_file_path = "repo_apis.py"
+        serve_command = f"conda run --name {conda_env_name} modal serve {api_file_path}"
+        print(get_api_links(apis))
+        subprocess.run(serve_command, shell=True, check=True)
+    except subprocess.CalledProcessError as e:
+        print("Error serving APIs: ", e)
+        return

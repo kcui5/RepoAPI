@@ -193,8 +193,7 @@ setup(
         file.write(content)
 
 def create_manifest_file():
-    #manifest_file_path = os.path.join(os.getcwd(), "package", "MANIFEST.in")
-    manifest_file_path = os.path.join(os.getcwd(), "MANIFEST.txt")
+    manifest_file_path = os.path.join(os.getcwd(), "package", "MANIFEST.in")
     with open(manifest_file_path, 'w') as file:
         file.write("graft src")
 
@@ -221,3 +220,20 @@ def pip_install_packages():
     except subprocess.CalledProcessError as e:
         print("Error installing package:", e)
         exit()
+
+def conda_install_packages(conda_env_name):
+    try:
+        subprocess.run(f"conda create --name {conda_env_name}", shell=True, check=True)
+        print(f"Conda environment {conda_env_name} created successfully")
+    except subprocess.CalledProcessError as e:
+        print(f"Error creating environment: {e}")
+
+    pkg_file_path = os.path.join(os.getcwd(), "package")
+    try:
+        subprocess.run(f"conda run --name {conda_env_name} pip install modal", shell=True, check=True)
+        print(f"Successfully installed modal in {conda_env_name}")
+        install_command = f"conda run --name {conda_env_name} pip install {pkg_file_path}"
+        subprocess.run(install_command, shell=True, check=True)
+        print("Local package installed successfully.")
+    except subprocess.CalledProcessError as e:
+        print("Error installing package:", e)

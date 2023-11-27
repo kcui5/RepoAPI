@@ -43,7 +43,6 @@ def is_valid_github_url(url):
     bool: True if valid, False otherwise.
     """
     if url.startswith('https://'):
-        print("https")
         return validate_https_github_url(url)
     else:
         return validate_ssh_github_url(url)
