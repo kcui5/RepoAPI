@@ -17,6 +17,8 @@ def get_external_packages(directory):
     """Reads the requirements.txt file and returns a list of packages."""
     packages = set()
     requirements_path = os.path.join(directory, "requirements.txt")
+    if not os.path.exists(requirements_path):
+        return "No requirements.txt file!"
 
     with open(requirements_path, 'r') as file:
         for line in file:
@@ -83,7 +85,9 @@ def recursively_fix_imports(repo_path, repo_name):
     """
     local_modules = get_python_modules(repo_path)
     external_packages = get_external_packages(repo_path)
-
+    if type(external_packages) == str:
+        return external_packages
+    
     # Process each file in the local package
     for root, dirs, files in os.walk(repo_path):
         for name in files:
@@ -92,6 +96,7 @@ def recursively_fix_imports(repo_path, repo_name):
                     print("Skipping setup.py file!")
                     continue
                 fix_imports(os.path.join(root, name), repo_name, local_modules, external_packages)
+    return "Fixed imports!"
         
 def fix_argparse(file, func_name, func_args):
     """Converts argparse inputted arguments into function signature arguments
@@ -172,8 +177,8 @@ def create_init_file(repo_path, api_functions):
     with open(init_file_path, 'w') as file:
         file.write(file_import_string)
 
-def create_setup_file(repo_path, repo_name):
-    setup_file_path = os.path.join(os.getcwd(), "package", "setup.py")
+def create_setup_file(repo_name):
+    setup_file_path = os.path.join(os.getcwd(), repo_name, "setup.py")
 
     with open(setup_file_path, 'w') as file:
         content = f"""from setuptools import setup, find_packages
@@ -192,8 +197,8 @@ setup(
 """
         file.write(content)
 
-def create_manifest_file():
-    manifest_file_path = os.path.join(os.getcwd(), "package", "MANIFEST.in")
+def create_manifest_file(repo_name):
+    manifest_file_path = os.path.join(os.getcwd(), repo_name, "MANIFEST.in")
     with open(manifest_file_path, 'w') as file:
         file.write("graft src")
 
@@ -221,19 +226,29 @@ def pip_install_packages():
         print("Error installing package:", e)
         exit()
 
-def conda_install_packages(conda_env_name):
+def conda_install_packages(conda_env_name, repo_name):
     try:
-        subprocess.run(f"conda create --name {conda_env_name}", shell=True, check=True)
+        subprocess.run(f"conda create --name {conda_env_name} --yes", shell=True, check=True)
         print(f"Conda environment {conda_env_name} created successfully")
     except subprocess.CalledProcessError as e:
-        print(f"Error creating environment: {e}")
+        return f"Error creating environment: {e}"
 
-    pkg_file_path = os.path.join(os.getcwd(), "package")
+    pkg_file_path = os.path.join(os.getcwd(), repo_name)
     try:
         subprocess.run(f"conda run --name {conda_env_name} pip install modal", shell=True, check=True)
         print(f"Successfully installed modal in {conda_env_name}")
         install_command = f"conda run --name {conda_env_name} pip install {pkg_file_path}"
         subprocess.run(install_command, shell=True, check=True)
         print("Local package installed successfully.")
+        return f"Installed local package into conda env {conda_env_name}"
     except subprocess.CalledProcessError as e:
-        print("Error installing package:", e)
+        return f"Error installing package: {e}"
+
+def clean_state():
+    try:
+        #subprocess.run(f"conda env remove --name {conda_env_name}")
+        p = os.path.join(os.getcwd(), "package")
+        np = os.path.join(os.getcwd(), "old_package")
+        subprocess.run(f"mv {p} {np}")
+    except subprocess.CalledProcessError as e:
+        print("Error cleaning state: ", e)

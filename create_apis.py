@@ -59,9 +59,7 @@ def fill_empty_api_args(apis, args):
             args[api] = []
     return args
 
-def create_api_file_from_local_pkg(api_function_calls, apis_args, repo_name, repo_path, gpu_type):
-    api_file_path = os.path.join(os.getcwd(), "repo_apis.py")
-
+def create_api_file_from_local_pkg(api_file_path, api_function_calls, apis_args, repo_name, repo_path, gpu_type):
     api_function_names = ["_".join(func.split('.')) for func in api_function_calls]
 
     content = f"""import json
@@ -83,9 +81,7 @@ for d in dependencies:
     with open(api_file_path, 'w') as file:
         file.write(content)
 
-def create_api_file_from_docker(api_function_calls, apis_args, docker_link, repo_name, repo_path, gpu_type):
-    api_file_path = os.path.join(os.getcwd(), "repo_apis.py")
-
+def create_api_file_from_docker(api_file_path, api_function_calls, apis_args, docker_link, repo_name, repo_path, gpu_type):
     api_function_names = ["_".join(func.split('.')) for func in api_function_calls]
 
     content = f"""import json
@@ -128,12 +124,14 @@ def serve_apis(apis):
         print("Error serving APIs: ", e)
         exit()
 
-def serve_apis_conda(conda_env_name, apis):
+def serve_apis_conda(conda_env_name, api_file_path, apis):
+    serve_command = f"conda run --name {conda_env_name} modal serve {api_file_path}"
+    print(get_api_links(apis))
+    #subprocess.run(serve_command, shell=True, check=True, timeout=60)
+    serving_process = subprocess.Popen(serve_command, shell=True)
     try:
-        api_file_path = "repo_apis.py"
-        serve_command = f"conda run --name {conda_env_name} modal serve {api_file_path}"
-        print(get_api_links(apis))
-        subprocess.run(serve_command, shell=True, check=True)
-    except subprocess.CalledProcessError as e:
-        print("Error serving APIs: ", e)
+        serving_process.wait(timeout=60)
+    except subprocess.TimeoutExpired:
+        serving_process.terminate()
+        print("Done serving.")
         return

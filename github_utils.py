@@ -3,6 +3,7 @@ import re
 import os
 
 def validate_https_github_url(url):
+    # Regular expression for a basic GitHub repo https URL pattern
     regex = r'^https://github\.com/[\w.-]+/[\w.-]+(?:\.git)?$'
 
     if len(url) > 200:
@@ -46,26 +47,52 @@ def is_valid_github_url(url):
         return validate_https_github_url(url)
     else:
         return validate_ssh_github_url(url)
-
-def clone_repo(repo_url):
+    
+def is_valid_docker_link(link):
     """
-    Clones a GitHub repository into /package/src/.
+    Validates whether the provided link is a valid Docker Env link.
+    
+    Args:
+    link (str): The link to validate.
+    
+    Returns:
+    bool: True if valid, False otherwise.
+    """
+    regex = r"[a-zA-Z0-9][a-zA-Z0-9\.-]*\/[a-zA-Z0-9_\/-]+(:[a-zA-Z0-9\._-]+)?"
+
+    if len(link) > 200:
+        return False
+    
+    return bool(re.match(regex, link))
+
+def clone_repo(repo_url, repo_path):
+    """
+    Clones a GitHub repository into the given repo_path path.
 
     Args:
     repo_url (str): The URL of the GitHub repository.
+    repo_path (os.path): The target directory location to clone the GitHub repository into.
 
     Returns:
     str: Output message of the clone operation.
     """
     try:
-        target_dir=os.path.join(os.getcwd(), "package", "src", get_repo_name(repo_url))
-        os.makedirs(target_dir)
-        subprocess.check_call(['git', 'clone', repo_url, target_dir])
+        os.makedirs(repo_path)
+        subprocess.check_call(['git', 'clone', repo_url, repo_path])
         return f"Successfully cloned {repo_url}"
     except subprocess.CalledProcessError as e:
         return f"An error occurred while cloning {repo_url}: {e}"
 
 def get_repo_name(repo_url):
+    """
+    Extracts the name of the GitHub repository.
+    
+    Args:
+    repo_url (str): The URL of the GitHub repository.
+    
+    Returns:
+    str: Name of the GitHub repository
+    """
     if repo_url.startswith('https://'):
         parts = repo_url.split('/')
         if len(parts) != 5:
