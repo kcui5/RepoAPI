@@ -38,26 +38,6 @@ def {func_name}(inputs: Dict):
 """
     return content
 
-def fill_empty_api_args(apis, args):
-    for api in apis:
-        if api in args:
-            if args[api] == ['']:
-                args[api] = []
-            else:
-                continue
-        else:
-            args[api] = []
-    return args
-
-def get_args(api):
-    parts = api.split('.')
-
-def get_all_api_args(apis):
-    args = set()
-    for api in apis:
-        args[api] = get_args(api)
-    return args
-
 def create_api_file_from_local_pkg(api_file_path, api_function_calls, repo_name, repo_path, gpu_type):
     api_function_names = ["_".join(func.split('.')) for func in api_function_calls]
 

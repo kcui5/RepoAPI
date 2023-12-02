@@ -42,7 +42,8 @@ def fix_imports(file_path, pkg_name, local_modules, external_packages):
     new_lines = []
     for line in lines:
         # Check if the line is an import statement
-        if line.startswith('import ') or line.startswith('from '):
+        stripped_line = line.lstrip()
+        if stripped_line.startswith('import ') or stripped_line.startswith('from '):
             # Determine if the import is local or external
             is_local = any(local_module in line for local_module in local_modules)
             is_external = any(external_pkg in line for external_pkg in external_packages)
@@ -54,9 +55,9 @@ def fix_imports(file_path, pkg_name, local_modules, external_packages):
                     new_line = line
                 else:
                     # Modify line to use local package import
-                    if line.startswith('import ') and not line.startswith('import .'):
+                    if stripped_line.startswith('import ') and not stripped_line.startswith('import .'):
                         new_line = line.replace('import ', 'from . import ', 1)
-                    elif line.startswith('from ') and not line.startswith('from .'):
+                    elif stripped_line.startswith('from ') and not stripped_line.startswith('from .'):
                         new_line = line.replace('from ', f'from {pkg_name}.', 1)
                     else:
                         new_line = line
