@@ -28,12 +28,12 @@ def repoapi_entry():
     repo_link = input['repo_link']
     docker_link = input['docker_link']
     apis = input['apis']
-    apis = apis.split(', ')
-    args = {
-        apis[0]: input['args'].split(', ')
-    }
-    gpu_type = ""
-    main.run(repo_link, docker_link, apis, args, gpu_type)
+    apis = apis.split(',')
+    apis = [api.lstrip().rstrip() for api in apis]
+    gpu_type = input['gpu_type'].upper()
+    run_result = main.run(repo_link, docker_link, apis, gpu_type)
+    if run_result:
+        return flask.jsonify({'status': '500', 'data': run_result})
     return flask.jsonify({'status': '200'})
 
 if __name__ == '__main__':

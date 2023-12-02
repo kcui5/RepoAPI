@@ -81,7 +81,8 @@ def recursively_fix_imports(repo_path, repo_name):
     Fixes import statements for all Python files in the specified subfolder.
 
     Args:
-    subfolder (str): The name of the subfolder.
+    repo_path (os.path): The path to the repository.
+    repo_name (str): The name of the repository.
     """
     local_modules = get_python_modules(repo_path)
     external_packages = get_external_packages(repo_path)

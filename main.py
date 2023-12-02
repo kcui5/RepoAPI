@@ -16,11 +16,19 @@ DOES NOT WORK IF ANY LOCAL PACKAGE FOLDER OR FILE OR FUNCTION HAS 'TORCH'
 
 MOUNT VOLUMES ???
 
-"""
+APIS IN PYTHON FILES IN FOLDERS???
 
-def run(repo_link, docker_link, apis, args, gpu_type):
+"""
+GPU_TYPES = {"A100", "A10G", "L4", "T4", "INF2", "ANY"}
+
+def validate_inputs(repo_link, docker_link, apis, gpu_type):
+    """Returns an error message if there is an invalid input, otherwise returns None."""
     if not apis:
         error_msg = "No APIs given!"
+        print(error_msg)
+        return error_msg
+    if gpu_type and gpu_type not in GPU_TYPES:
+        error_msg = "Invalid GPU!"
         print(error_msg)
         return error_msg
     if not github_utils.is_valid_github_url(repo_link):
@@ -31,6 +39,13 @@ def run(repo_link, docker_link, apis, args, gpu_type):
         error_msg = "Invalid Docker link!"
         print(error_msg)
         return error_msg
+    
+    return None
+
+def run(repo_link, docker_link, apis, gpu_type):
+    valid_inputs_result = validate_inputs(repo_link, docker_link, apis, gpu_type)
+    if valid_inputs_result:
+        return valid_inputs_result
     
     repo_name = github_utils.get_repo_name(repo_link)
     if not repo_name:
@@ -52,9 +67,6 @@ def run(repo_link, docker_link, apis, args, gpu_type):
     if fix_imports_result == "No requirements.txt file!":
         return fix_imports_result
     
-    args = create_apis.fill_empty_api_args(apis, args)
-    #pkg_utils.fix_all_argparse(repo_path, apis, args)
-    #print("Fixed argparse arguments")
     print("Skipping argparse fixing...")
     
     pkg_utils.create_init_file(repo_path, apis)
@@ -68,10 +80,10 @@ def run(repo_link, docker_link, apis, args, gpu_type):
     
     api_file_path = os.path.join(os.getcwd(), f"{repo_name}_apis.py")
     if docker_link:
-        create_apis.create_api_file_from_docker(api_file_path, apis, args, docker_link, repo_name, repo_path, gpu_type)
+        create_apis.create_api_file_from_docker(api_file_path, apis, docker_link, repo_name, repo_path, gpu_type)
         print("Created API file from docker")
     else:
-        create_apis.create_api_file_from_local_pkg(api_file_path, apis, args, repo_name, repo_path, gpu_type)
+        create_apis.create_api_file_from_local_pkg(api_file_path, apis, repo_name, repo_path, gpu_type)
         print("Created API file from local package")
 
     conda_install_result = pkg_utils.conda_install_packages(conda_env_name, repo_name)
@@ -80,7 +92,7 @@ def run(repo_link, docker_link, apis, args, gpu_type):
         return conda_install_result
 
     print("Serving APIs...")
-    create_apis.serve_apis_conda(conda_env_name, api_file_path, apis)
+    create_apis.serve_apis_conda(conda_env_name, api_file_path, repo_name, apis)
 
 #Example calls:
 """

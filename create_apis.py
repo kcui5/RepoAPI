@@ -1,9 +1,8 @@
-import os
 import subprocess
 
 import pkg_utils
 
-def get_api_func_signature(func_name, func_call, func_args, img=None, repo=None, gpu=None):
+def get_api_func_signature(func_name, func_call, repo, img=None, gpu=None):
     decorator_args = []
     if img:
         decorator_args.append(f'image={img}')
@@ -14,22 +13,10 @@ def get_api_func_signature(func_name, func_call, func_args, img=None, repo=None,
     decorator_args_str = ", ".join(decorator_args)
     stub_function_decorator = f'@stub.function({decorator_args_str})'
 
-    #Inputs that do not have a default value:
-    inputs_parsed = "\n".join([" " * 4 + f"{arg}" + f" = inputs['{arg.split(':')[0]}']" for arg in func_args if "=" not in arg])
-    #Inputs that do have a default value:
-    default_inputs_parsed = "\n".join([" " * 4 + f"{arg.split('=')[0]}" + f"= inputs['{arg.split(':')[0]}'] if '{arg.split(':')[0]}' in inputs else{arg.split('=')[1]}" for arg in func_args if "=" in arg])
-    if default_inputs_parsed:
-        inputs_parsed += "\n" + default_inputs_parsed
 
-    func_args_str = ", ".join([f"{arg.split(':')[0]}" for arg in func_args])
-    if repo:
-        func_call_str = f"""import {repo}
+    func_call_str = f"""import {repo}
 
-{inputs_parsed}
-
-    res = {repo}.{func_call}({func_args_str})"""
-    else:
-        func_call_str = f'res = {func_call}({func_args_str})'
+    res = {repo}.{func_call}(**inputs)"""
 
     res_string = """res_json = {
         "status": "200",
@@ -54,12 +41,24 @@ def {func_name}(inputs: Dict):
 def fill_empty_api_args(apis, args):
     for api in apis:
         if api in args:
-            continue
+            if args[api] == ['']:
+                args[api] = []
+            else:
+                continue
         else:
             args[api] = []
     return args
 
-def create_api_file_from_local_pkg(api_file_path, api_function_calls, apis_args, repo_name, repo_path, gpu_type):
+def get_args(api):
+    parts = api.split('.')
+
+def get_all_api_args(apis):
+    args = set()
+    for api in apis:
+        args[api] = get_args(api)
+    return args
+
+def create_api_file_from_local_pkg(api_file_path, api_function_calls, repo_name, repo_path, gpu_type):
     api_function_names = ["_".join(func.split('.')) for func in api_function_calls]
 
     content = f"""import json
@@ -75,13 +74,12 @@ for d in dependencies:
 
 """
     for i in range(len(api_function_calls)):
-        api_args = apis_args[api_function_calls[i]]
-        content += get_api_func_signature(api_function_names[i], api_function_calls[i], api_args, img="img", repo=repo_name, gpu=gpu_type)
+        content += get_api_func_signature(api_function_names[i], api_function_calls[i], repo_name, img="img", gpu=gpu_type)
     
     with open(api_file_path, 'w') as file:
         file.write(content)
 
-def create_api_file_from_docker(api_file_path, api_function_calls, apis_args, docker_link, repo_name, repo_path, gpu_type):
+def create_api_file_from_docker(api_file_path, api_function_calls, docker_link, repo_name, gpu_type):
     api_function_names = ["_".join(func.split('.')) for func in api_function_calls]
 
     content = f"""import json
@@ -93,17 +91,19 @@ docker_img = modal.Image.from_registry("{docker_link}")
 
 """
     for i in range(len(api_function_calls)):
-        api_args = apis_args[api_function_calls[i]]
-        content += get_api_func_signature(api_function_names[i], api_function_calls[i], api_args, img="docker_img", repo=repo_name, gpu=gpu_type)
+        content += get_api_func_signature(api_function_names[i], api_function_calls[i], repo_name, img="docker_img", gpu=gpu_type)
 
     with open(api_file_path, 'w') as file:
         file.write(content)
 
-def get_api_links(apis):
+def get_api_links(repo_name, apis):
     apis = ["-".join(s.split('.')) for s in apis]
     apis = ["-".join(s.split("_")) for s in apis]
     apis = [s.lower() for s in apis]
-    api_links = [f"https://kcui5--repo-apis-py-{s}-dev.modal.run" for s in apis]
+    repo_name = "-".join(repo_name.split('.'))
+    repo_name = "-".join(repo_name.split('_'))
+    repo_name = f"{repo_name}-apis-py"
+    api_links = [f"https://kcui5--{repo_name}-{s}-dev.modal.run" for s in apis]
     return api_links
 
 def serve_apis(apis):
@@ -124,9 +124,10 @@ def serve_apis(apis):
         print("Error serving APIs: ", e)
         exit()
 
-def serve_apis_conda(conda_env_name, api_file_path, apis):
+def serve_apis_conda(conda_env_name, api_file_path, repo_name, apis):
     serve_command = f"conda run --name {conda_env_name} modal serve {api_file_path}"
-    print(get_api_links(apis))
+    print(serve_command)
+    print(get_api_links(repo_name, apis))
     #subprocess.run(serve_command, shell=True, check=True, timeout=60)
     serving_process = subprocess.Popen(serve_command, shell=True)
     try:
