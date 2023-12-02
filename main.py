@@ -54,37 +54,38 @@ def run(repo_link, docker_link, apis, gpu_type):
         return error_msg
     print(f"Repository Name: {repo_name}")
     repo_path = os.path.join(os.getcwd(), repo_name, "src", repo_name)
+    api_file_path = os.path.join(os.getcwd(), f"{repo_name}_apis.py")
     conda_env_name = f"{repo_name}"
     
-    print(f"Cloning repo from {repo_link}...")
-    clone_result = github_utils.clone_repo(repo_link, repo_path)
-    print(clone_result)
-    if clone_result.startswith("An error occurred"):
-        return clone_result
-    
-    fix_imports_result = pkg_utils.recursively_fix_imports(repo_path, repo_name)
-    print(fix_imports_result)
-    if fix_imports_result == "No requirements.txt file!":
-        return fix_imports_result
-    
-    print("Skipping argparse fixing...")
-    
-    pkg_utils.create_init_file(repo_path, apis)
-    print("Created init file")
-    
-    pkg_utils.create_setup_file(repo_name)
-    print("Created setup file")
+    if not os.path.exists(repo_path):
+        print(f"Cloning repo from {repo_link}...")
+        clone_result = github_utils.clone_repo(repo_link, repo_path)
+        print(clone_result)
+        if clone_result.startswith("An error occurred"):
+            return clone_result
+        
+        fix_imports_result = pkg_utils.recursively_fix_imports(repo_path, repo_name)
+        print(fix_imports_result)
+        if fix_imports_result == "No requirements.txt file!":
+            return fix_imports_result
+        
+        print("Skipping argparse fixing...")
+        
+        pkg_utils.create_init_file(repo_path, apis)
+        print("Created init file")
+        
+        pkg_utils.create_setup_file(repo_name)
+        print("Created setup file")
 
-    pkg_utils.create_manifest_file(repo_name)
-    print("Created manifest file")
-    
-    api_file_path = os.path.join(os.getcwd(), f"{repo_name}_apis.py")
-    if docker_link:
-        create_apis.create_api_file_from_docker(api_file_path, apis, docker_link, repo_name, repo_path, gpu_type)
-        print("Created API file from docker")
-    else:
-        create_apis.create_api_file_from_local_pkg(api_file_path, apis, repo_name, repo_path, gpu_type)
-        print("Created API file from local package")
+        pkg_utils.create_manifest_file(repo_name)
+        print("Created manifest file")
+        
+        if docker_link:
+            create_apis.create_api_file_from_docker(api_file_path, apis, docker_link, repo_name, repo_path, gpu_type)
+            print("Created API file from docker")
+        else:
+            create_apis.create_api_file_from_local_pkg(api_file_path, apis, repo_name, repo_path, gpu_type)
+            print("Created API file from local package")
 
     conda_install_result = pkg_utils.conda_install_packages(conda_env_name, repo_name)
     print(conda_install_result)
