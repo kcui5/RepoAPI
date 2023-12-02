@@ -2,6 +2,19 @@ import os
 import subprocess
 import re
 
+def security_check_repo(repo_path):
+    """Checks repository for any dangerous code"""
+    dangerous = {' subprocess', ' os', ' eval', ' exec', ' sys', ' shutil', ' socket', ' ctypes', ' pickle', ' compile', ' open', ' importlib', ' __import__', ' platform', ' inspect'}
+    
+    for root, dirs, files in os.walk(repo_path):
+        for file in files:
+            file_path = os.path.join(root, file)
+            with open(file_path) as f:
+                for line in f:
+                    if any(dangerous_word in line for dangerous_word in dangerous):
+                        return False
+    return True
+
 def get_python_modules(directory):
     """ Returns a set of all Python module names in the directory, including subdirectories. """
     module_names = set()

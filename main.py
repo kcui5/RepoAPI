@@ -64,6 +64,11 @@ def run(repo_link, docker_link, apis, gpu_type):
         if clone_result.startswith("An error occurred"):
             return clone_result
         
+        security_check_repo_result = pkg_utils.security_check_repo(repo_path)
+        print("Security check: ", security_check_repo_result)
+        if not security_check_repo_result:
+            return "This GitHub repository could be unsafe! Please don't hack me I'm just a poor college student !!!! :("
+        
         fix_imports_result = pkg_utils.recursively_fix_imports(repo_path, repo_name)
         print(fix_imports_result)
         if fix_imports_result == "No requirements.txt file!":
