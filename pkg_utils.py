@@ -16,7 +16,7 @@ def security_check_repo(repo_path):
     return True
 
 def get_python_modules(directory):
-    """ Returns a set of all Python module names in the directory, including subdirectories. """
+    """Returns a set of all Python module names in the directory, including subdirectories."""
     module_names = set()
     for root, dirs, files in os.walk(directory):
         for file in files:
@@ -46,7 +46,6 @@ def get_external_packages(directory):
 def fix_imports(file_path, pkg_name, local_modules, external_packages):
     #TO HANDLE SPECIAL CASE OF TORCH PACKAGE NOT BEING IN REQUIREMENTS.TXT:
     external_packages.add("torch")
-
 
     print(f"Fixing imports in... {file_path}")
     with open(file_path, 'r') as file:
