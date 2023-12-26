@@ -257,6 +257,24 @@ def conda_install_packages(conda_env_name, repo_name):
         return f"Installed local package into conda env {conda_env_name}"
     except subprocess.CalledProcessError as e:
         return f"Error installing package: {e}"
+    
+def venv_install_packages(venv_name, repo_name):
+    try:
+        subprocess.run(f"python -m venv {venv_name}", shell=True, check=True)
+        print(f"Virtual environment '{venv_name}' created.")
+    except subprocess.CalledProcessError as e:
+        return f"Error creating venv: {e}"
+    """
+    pkg_file_path = os.path.join(os.getcwd(), repo_name)
+    pip_executable = os.path.join(venv_name, "bin", "pip")
+    try:
+        subprocess.run(f"{pip_executable} install modal", shell=True, check=True)
+        print(f"Successfully installed modal in {venv_name}")
+        subprocess.run(f"{pip_executable} install {pkg_file_path}", shell=True, check=True)
+        print(f"Successfully installed local package in {venv_name}")
+        return f"Installed local package into venv {venv_name}"
+    except subprocess.CalledProcessError as e:
+        return f"Error installing package: {e}"""
 
 def clean_state():
     try:
@@ -266,3 +284,5 @@ def clean_state():
         subprocess.run(f"mv {p} {np}")
     except subprocess.CalledProcessError as e:
         print("Error cleaning state: ", e)
+
+venv_install_packages("pd_modal", "pd_modal")
