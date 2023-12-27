@@ -93,7 +93,9 @@ def run(repo_link, docker_link, apis, gpu_type):
         return venv_install_result
 
     print("Serving APIs...")
-    create_apis.serve_apis_venv(venv_name, api_file_path)
+    serve_apis_venv_result = create_apis.serve_apis_venv(venv_name, api_file_path)
+    if serve_apis_venv_result:
+        return serve_apis_venv_result
 
 #Example calls:
 """

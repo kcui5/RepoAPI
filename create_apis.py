@@ -26,9 +26,10 @@ def get_api_func_signature(func_name, func_call, repo, img=None, gpu=None):
         }
     }
 """
+    url_label = "-".join(func_name.split('_')).lower()
 
     content = f"""{stub_function_decorator}
-@modal.web_endpoint()
+@modal.web_endpoint(label='{url_label}')
 def {func_name}(inputs: Dict):
     {func_call_str}
     {res_string}
@@ -122,3 +123,6 @@ def serve_apis_venv(venv_name, api_file_path):
         serving_process.terminate()
         print("Done serving.")
         return
+    except Exception as e:
+        return e
+
