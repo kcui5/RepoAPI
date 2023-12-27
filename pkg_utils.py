@@ -261,13 +261,12 @@ def conda_install_packages(conda_env_name, repo_name):
         return f"Error installing package: {e}"
     
 def venv_install_packages(venv_name, repo_name):
-    """
     try:
         subprocess.run(f"python -m venv {venv_name}", shell=True, check=True)
         print(f"Virtual environment '{venv_name}' created.")
     except subprocess.CalledProcessError as e:
         return f"Error creating venv: {e}"
-    """
+    
     pkg_file_path = os.path.join(os.getcwd(), repo_name)
     pip_executable = os.path.join(venv_name, "bin", "pip")
     try:

@@ -122,5 +122,3 @@ def serve_apis_venv(venv_name, api_file_path):
         serving_process.terminate()
         print("Done serving.")
         return
-
-serve_apis_venv("pd_modal_venv", "pd_modal_apis.py")

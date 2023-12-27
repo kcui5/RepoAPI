@@ -87,17 +87,13 @@ def run(repo_link, docker_link, apis, gpu_type):
             create_apis.create_api_file_from_local_pkg(api_file_path, apis, repo_name, repo_path, gpu_type)
             print("Created API file from local package")
 
-    #conda_install_result = pkg_utils.conda_install_packages(conda_env_name, repo_name)
     venv_install_result = pkg_utils.venv_install_packages(venv_name, repo_name)
-    #print(conda_install_result)
     print(venv_install_result)
-    #if conda_install_result.startswith("Error"):
-    #    return conda_install_result
     if venv_install_result.startswith("Error"):
         return venv_install_result
 
     print("Serving APIs...")
-    create_apis.serve_apis_conda(conda_env_name, api_file_path, repo_name, apis)
+    create_apis.serve_apis_venv(venv_name, api_file_path)
 
 #Example calls:
 """
