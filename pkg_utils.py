@@ -285,4 +285,4 @@ def clean_state():
     except subprocess.CalledProcessError as e:
         print("Error cleaning state: ", e)
 
-venv_install_packages("pd_modal", "pd_modal")
+venv_install_packages("pd_modal_venv", "pd_modal")
