@@ -50,6 +50,7 @@ def run(repo_link, docker_link, apis, gpu_type):
     repo_path = os.path.join(os.getcwd(), repo_name, "src", repo_name)
     api_file_path = os.path.join(os.getcwd(), f"{repo_name}_apis.py")
     conda_env_name = f"{repo_name}"
+    venv_name = f"{repo_name}_venv"
     
     if not os.path.exists(repo_path):
         print(f"Cloning repo from {repo_link}...")
@@ -87,7 +88,7 @@ def run(repo_link, docker_link, apis, gpu_type):
             print("Created API file from local package")
 
     #conda_install_result = pkg_utils.conda_install_packages(conda_env_name, repo_name)
-    venv_install_result = pkg_utils.venv_install_packages(conda_env_name, repo_name)
+    venv_install_result = pkg_utils.venv_install_packages(venv_name, repo_name)
     #print(conda_install_result)
     print(venv_install_result)
     #if conda_install_result.startswith("Error"):

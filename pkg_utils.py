@@ -8,6 +8,8 @@ def security_check_repo(repo_path):
     
     for root, dirs, files in os.walk(repo_path):
         for file in files:
+            if not file.endswith('.py'):
+                continue
             file_path = os.path.join(root, file)
             with open(file_path) as f:
                 for line in f:
@@ -259,6 +261,7 @@ def conda_install_packages(conda_env_name, repo_name):
         return f"Error installing package: {e}"
     
 def venv_install_packages(venv_name, repo_name):
+    """
     try:
         subprocess.run(f"python -m venv {venv_name}", shell=True, check=True)
         print(f"Virtual environment '{venv_name}' created.")
@@ -284,5 +287,3 @@ def clean_state():
         subprocess.run(f"mv {p} {np}")
     except subprocess.CalledProcessError as e:
         print("Error cleaning state: ", e)
-
-venv_install_packages("pd_modal_venv", "pd_modal")

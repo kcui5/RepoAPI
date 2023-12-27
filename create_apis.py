@@ -1,4 +1,5 @@
 import subprocess
+import os
 
 import pkg_utils
 
@@ -109,3 +110,17 @@ def serve_apis_conda(conda_env_name, api_file_path, repo_name, apis):
         serving_process.terminate()
         print("Done serving.")
         return
+    
+def serve_apis_venv(venv_name, api_file_path):
+    modal_executable = os.path.join(venv_name, 'bin', 'modal')
+    serve_command = f"{modal_executable} serve {api_file_path}"
+    try:
+        serving_process = subprocess.Popen(serve_command, shell=True)
+        print("serving")
+        serving_process.wait(timeout=60)
+    except subprocess.TimeoutExpired:
+        serving_process.terminate()
+        print("Done serving.")
+        return
+
+serve_apis_venv("pd_modal_venv", "pd_modal_apis.py")
