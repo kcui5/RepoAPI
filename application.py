@@ -7,6 +7,10 @@ import main
 application = flask.Flask(__name__)
 
 @application.route('/')
+def hello():
+    return "RepoAPI"
+
+@application.route('/process')
 def repoapi_entry():
     auth_header = flask.request.headers.get('Authorization')
 

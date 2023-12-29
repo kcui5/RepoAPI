@@ -48,6 +48,8 @@ def run(repo_link, docker_link, apis, gpu_type):
         return error_msg
     print(f"Repository Name: {repo_name}")
     repo_path = os.path.join(os.getcwd(), repo_name, "src", repo_name)
+    setup_file_path = os.path.join(os.getcwd(), repo_name, "setup.py")
+    manifest_file_path = os.path.join(os.getcwd(), repo_name, "MANIFEST.in")
     api_file_path = os.path.join(os.getcwd(), f"{repo_name}_apis.py")
     conda_env_name = f"{repo_name}"
     venv_name = f"{repo_name}_venv"
@@ -74,10 +76,10 @@ def run(repo_link, docker_link, apis, gpu_type):
         pkg_utils.create_init_file(repo_path, apis)
         print("Created init file")
         
-        pkg_utils.create_setup_file(repo_name)
+        pkg_utils.create_setup_file(setup_file_path, repo_name)
         print("Created setup file")
 
-        pkg_utils.create_manifest_file(repo_name)
+        pkg_utils.create_manifest_file(manifest_file_path)
         print("Created manifest file")
         
         if docker_link:

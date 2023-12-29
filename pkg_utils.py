@@ -193,9 +193,7 @@ def create_init_file(repo_path, api_functions):
     with open(init_file_path, 'w') as file:
         file.write(file_import_string)
 
-def create_setup_file(repo_name):
-    setup_file_path = os.path.join(os.getcwd(), repo_name, "setup.py")
-
+def create_setup_file(setup_file_path, repo_name):
     with open(setup_file_path, 'w') as file:
         content = f"""from setuptools import setup, find_packages
 
@@ -213,8 +211,7 @@ setup(
 """
         file.write(content)
 
-def create_manifest_file(repo_name):
-    manifest_file_path = os.path.join(os.getcwd(), repo_name, "MANIFEST.in")
+def create_manifest_file(manifest_file_path):
     with open(manifest_file_path, 'w') as file:
         file.write("graft src")
 
