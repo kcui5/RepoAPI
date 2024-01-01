@@ -12,13 +12,14 @@ def hello():
 
 @application.route('/process')
 def repoapi_entry():
+    
     auth_header = flask.request.headers.get('Authorization')
-
+    
     if not auth_header:
         flask.abort(401, description="Authorization header is missing")
 
     parts = auth_header.split()
-
+    
     if parts[0].lower() != 'bearer' or len(parts) != 2:
         flask.abort(401, description="Authorization header must be Bearer token")
 
@@ -35,7 +36,12 @@ def repoapi_entry():
     apis = apis.split(',')
     apis = [api.lstrip().rstrip() for api in apis]
     gpu_type = input['gpu_type'].upper()
-    run_result = main.run(repo_link, docker_link, apis, gpu_type)
+    
+    try:
+        run_result = main.run(repo_link, docker_link, apis, gpu_type)
+    except:
+        return flask.jsonify({'status': '500', 'data': run_result})
+
     if run_result:
         return flask.jsonify({'status': '500', 'data': run_result})
     return flask.jsonify({'status': '200'})
